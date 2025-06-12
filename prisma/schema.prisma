@@ -1,0 +1,243 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String?      @unique
+  image         String?
+  books         Book[]
+  reviews       Review[]
+  chatMessages  ChatMessage[]
+  discussions   Discussion[]
+  createdAt     DateTime     @default(now())
+}
+
+model Book {
+  id            String      @id @default(cuid())
+  title         String
+  author        String
+  description   String?
+  pages         Int
+  status        String      @default("to-read")
+  progress      Int        @default(0)
+  rating        Int?
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  reviews       Review[]
+  chatMessages  ChatMessage[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  content   String
+  rating    Int
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  content   String
+  role      String   // 'user' | 'assistant'
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Discussion {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  bookId      String
+  book        Book     @relation(fields: [bookId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  replies     DiscussionReply[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DiscussionReply {
+  id          String   @id @default(cuid())
+  content     String
+  discussionId String
+  discussion  Discussion @relation(fields: [discussionId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model ReadingStatistic {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  bookId      String
+  book        Book     @relation(fields: [bookId], references: [id])
+  pagesRead   Int
+  mood        String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model BookClub {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  members     User[]   @relation("BookClubMembers")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BookClubMember {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  bookClubId  String
+  bookClub    BookClub @relation(fields: [bookClubId], references: [id])
+  joinedAt    DateTime @default(now())
+  role        String   // 'member' | 'admin'
+  createdAt   DateTime @default(now())
+}
+  updatedAt     DateTime     @updatedAt
+}
+
+model Book {
+  id            String        @id @default(cuid())
+  title         String
+  author        String
+  description   String?
+  pages         Int
+  status        String        // 'reading', 'completed', 'to-read'
+  progress      Int          @default(0)
+  rating        Int?         // 1-5
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  reviews       Review[]
+model DiscussionReply {
+  id          String    @id @default(cuid())
+  content     String
+  discussionId String
+  discussion  Discussion @relation(fields: [discussionId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+}
+
+model ReadingGoal {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  targetPages Int
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  progress    ReadingGoalProgress[]
+
+  @@unique([userId, title])
+}
+
+model ReadingGoalProgress {
+  id        String   @id @default(cuid())
+  goalId    String
+  date      DateTime
+  pagesRead Int
+  mood      String?
+  createdAt DateTime @default(now())
+  goal      ReadingGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, date])
+}
+
+model BookRecommendation {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  author      String
+  description String
+  genre       String
+  coverUrl    String?
+  score       Float    // AI-generated recommendation score
+  reason      String   // AI-generated recommendation reason
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, title])
+}
+
+model Challenge {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  type        String   // 'pages', 'books', 'genre', 'author'
+  target      Int
+  startDate   DateTime
+  endDate     DateTime
+  reward      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  participants User[]   @relation("ChallengeParticipants")
+}
+
+model ReadingJournal {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookId      String
+  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  title       String
+  content     String
+  mood        String   // 'happy', 'neutral', 'thoughtful', 'confused', 'inspired'
+  progress    Int      // Percentage of book completed
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, bookId, title])
+}
+
+model ChallengeParticipant {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  progress    Int      @default(0)
+  status      String   // 'active', 'completed', 'failed'
+  joinedAt    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, challengeId])
+}
+
+model ReadingStatistics {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  totalBooks  Int       @default(0)
+  totalPages  Int       @default(0)
+  avgPagesPerDay Int    @default(0)
+  favoriteGenres String[]
+  moodHistory Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
