@@ -2,6 +2,11 @@
   command = "npm ci && npm run build"
   publish = ".next"
   base = "/"
+  cache = [
+    "node_modules",
+    ".next",
+    "node_modules/.cache"
+  ]
 
 [context.production]
   command = "npm run build"
@@ -13,6 +18,13 @@
     NEXT_PUBLIC_APP_URL = "${NEXT_PUBLIC_APP_URL}",
     OPENAI_API_KEY = "${OPENAI_API_KEY}"
   }
+
+[context.production.cache]
+  directories = [
+    "node_modules",
+    ".next",
+    "node_modules/.cache"
+  ]
 
 [[redirects]]
   from = "/"
