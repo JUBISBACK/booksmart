@@ -3,6 +3,7 @@ export interface Book {
   title: string
   author: string
   description?: string
+  genre: string
   pages: number
   status: 'reading' | 'completed' | 'to-read'
   progress: number
