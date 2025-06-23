@@ -8,6 +8,7 @@ interface CalendarProps {
   value: Date | undefined
   onChange: (date: Date | undefined) => void
   className?: string
+  required?: boolean
 }
 
 export function Calendar({ value, onChange, className }: CalendarProps) {

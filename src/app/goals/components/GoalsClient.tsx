@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { useState } from "react"
+import CreateGoalForm from "./CreateGoalForm"
 
 interface GoalsClientProps {
   goals: any[]
