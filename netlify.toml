@@ -1,6 +1,13 @@
 [build]
   command = "npm ci && npm run build"
   publish = ".next"
+  base = "/"
+  cache = [
+    "node_modules",
+    ".next",
+    "node_modules/.cache",
+    "node_modules/.vite"
+  ]
 
 [dev]
   command = "npm run dev"
