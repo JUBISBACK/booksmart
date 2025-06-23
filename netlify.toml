@@ -5,31 +5,28 @@
   cache = [
     "node_modules",
     ".next",
-    "node_modules/.cache",
-    "node_modules/.vite"
+    "node_modules/.cache"
   ]
-  environment = ["DATABASE_URL", "NEXTAUTH_URL", "NEXTAUTH_SECRET", "NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_APP_URL", "OPENAI_API_KEY"]
 
 [dev]
   command = "npm run dev"
   port = 3000
 
-[build.environment]
-  DATABASE_URL = "${DATABASE_URL}"
-  NEXTAUTH_URL = "${NEXTAUTH_URL}"
-  NEXTAUTH_SECRET = "${NEXTAUTH_SECRET}"
-  NEXT_PUBLIC_API_URL = "${NEXT_PUBLIC_API_URL}"
-  NEXT_PUBLIC_APP_URL = "${NEXT_PUBLIC_APP_URL}"
-  OPENAI_API_KEY = "${OPENAI_API_KEY}"
+[context.production]
+  command = "npm run build"
+  environment = {
+    DATABASE_URL = "${DATABASE_URL}",
+    NEXTAUTH_URL = "${NEXTAUTH_URL}",
+    NEXTAUTH_SECRET = "${NEXTAUTH_SECRET}",
+    NEXT_PUBLIC_API_URL = "${NEXT_PUBLIC_API_URL}",
+    NEXT_PUBLIC_APP_URL = "${NEXT_PUBLIC_APP_URL}",
+    OPENAI_API_KEY = "${OPENAI_API_KEY}"
+  }
 
 [[redirects]]
   from = "/"
   to = "/dashboard"
   status = 301
-
-[context.production]
-  command = "npm run build"
-  environment = ["DATABASE_URL", "NEXTAUTH_URL", "NEXTAUTH_SECRET", "NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_APP_URL", "OPENAI_API_KEY"]
 
 [context.production.environment]
   DATABASE_URL = "${DATABASE_URL}"
@@ -38,8 +35,3 @@
   NEXT_PUBLIC_API_URL = "${NEXT_PUBLIC_API_URL}"
   NEXT_PUBLIC_APP_URL = "${NEXT_PUBLIC_APP_URL}"
   OPENAI_API_KEY = "${OPENAI_API_KEY}"
-
-[[redirects]]
-  from = "/"
-  to = "/dashboard"
-  status = 301
