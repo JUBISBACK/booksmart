@@ -2,15 +2,6 @@
   command = "npm ci && npm run build"
   publish = ".next"
   base = "/"
-  cache = [
-    "node_modules",
-    ".next",
-    "node_modules/.cache"
-  ]
-
-[dev]
-  command = "npm run dev"
-  port = 3000
 
 [context.production]
   command = "npm run build"
@@ -27,11 +18,3 @@
   from = "/"
   to = "/dashboard"
   status = 301
-
-[context.production.environment]
-  DATABASE_URL = "${DATABASE_URL}"
-  NEXTAUTH_URL = "${NEXTAUTH_URL}"
-  NEXTAUTH_SECRET = "${NEXTAUTH_SECRET}"
-  NEXT_PUBLIC_API_URL = "${NEXT_PUBLIC_API_URL}"
-  NEXT_PUBLIC_APP_URL = "${NEXT_PUBLIC_APP_URL}"
-  OPENAI_API_KEY = "${OPENAI_API_KEY}"
