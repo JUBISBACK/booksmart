@@ -7,12 +7,12 @@
   port = 3000
 
 [build.environment]
-  DATABASE_URL = "postgresql://neondb_owner:npg_JvWjNXpsan18@ep-cool-bird-a8jsfcyj-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+  DATABASE_URL = "${DATABASE_URL}"
   NEXTAUTH_URL = "https://booksmart.windsurf.build"
-  NEXTAUTH_SECRET = "MphtzzX1iPvQdxWe7xcLpzY5mApBpvOa2NRw9mBjp9Y="
+  NEXTAUTH_SECRET = "${NEXTAUTH_SECRET}"
   NEXT_PUBLIC_API_URL = "https://booksmart.windsurf.build/api"
   NEXT_PUBLIC_APP_URL = "https://booksmart.windsurf.build"
-  OPENAI_API_KEY = "your-openai-api-key"
+  OPENAI_API_KEY = "${OPENAI_API_KEY}"
 
 [[redirects]]
   from = "/"
