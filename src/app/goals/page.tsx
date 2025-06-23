@@ -1,12 +1,13 @@
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Calendar } from "@/components/ui/calendar"
-import { format } from "date-fns"
 import { db } from "@/lib/db"
 import { auth } from "@/lib/auth"
+import GoalsClient from "./components/GoalsClient"
 import { useState } from "react"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
 
 export default async function GoalsPage() {
   const session = await auth()
@@ -20,68 +21,27 @@ export default async function GoalsPage() {
     include: {
       progress: {
         orderBy: { date: "desc" },
-        take: 1,
-      },
-    },
+        take: 1
+      }
+    }
   })
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8">Reading Goals</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <CreateGoalForm />
-        
-        {goals.map((goal) => (
-          <Card key={goal.id} className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">{goal.title}</h2>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {format(new Date(goal.startDate), 'MMM d')} - {format(new Date(goal.endDate), 'MMM d')}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <div className="h-2 bg-muted rounded-full">
-                    <div
-                      className="h-2 bg-primary rounded-full transition-all duration-300"
-                      style={{ width: `${goal.progress}%` }}
-                    />
-                  </div>
-                </div>
-                <span className="text-sm font-medium">
-                  {goal.progress}%
-                </span>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="pages">Pages Read Today</Label>
-                <Input
-                  id="pages"
-                  type="number"
-                  defaultValue="0"
-                  className="w-full"
-                />
-                <Button>Update Progress</Button>
-              </div>
-
-              <div className="text-sm text-muted-foreground">
-                <p>Total Target: {goal.targetPages} pages</p>
-                <p>Current Progress: {goal.progress}%</p>
-              </div>
-            </div>
-          </Card>
-        ))}
+      <div className="space-y-4">
+        <Card>
+          <GoalsClient goals={goals} userId={session.user.id} />
+        </Card>
       </div>
     </div>
   )
 }
 
-function CreateGoalForm() {
+interface CreateGoalFormProps {
+  userId: string
+}
+
+function CreateGoalForm({ userId }: CreateGoalFormProps) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [targetPages, setTargetPages] = useState("")
@@ -90,7 +50,35 @@ function CreateGoalForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement goal creation API call
+    try {
+      const response = await fetch('/api/goals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          title,
+          description,
+          targetPages: parseInt(targetPages),
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString()
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create goal')
+      }
+
+      // Reset form
+      setTitle("")
+      setDescription("")
+      setTargetPages("")
+      setStartDate(new Date())
+      setEndDate(new Date())
+    } catch (error) {
+      console.error('Error creating goal:', error)
+    }
   }
 
   return (

@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { auth } from "@/lib/auth"
+import { Prisma } from '@prisma/client'
+
+interface CreateGoalBody {
+  title: string
+  description: string
+  targetPages: string
+  startDate: string
+  endDate: string
+}
+
+interface CreateGoalResponse extends Prisma.ReadingGoalGetPayload<{}> {}
 
 export async function GET() {
   try {
@@ -34,7 +45,7 @@ export async function POST(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await request.json() as CreateGoalBody
     const {
       title,
       description,
@@ -43,20 +54,54 @@ export async function POST(request: Request) {
       endDate,
     } = body
 
+    // Validate input
+    if (!title || !targetPages || !startDate || !endDate) {
+      return new NextResponse("Missing required fields", { status: 400 })
+    }
+
+    const parsedTargetPages = parseInt(targetPages)
+    if (isNaN(parsedTargetPages) || parsedTargetPages <= 0) {
+      return new NextResponse("Invalid target pages", { status: 400 })
+    }
+
+    const parsedStartDate = new Date(startDate)
+    const parsedEndDate = new Date(endDate)
+    if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
+      return new NextResponse("Invalid date format", { status: 400 })
+    }
+
+    if (parsedEndDate <= parsedStartDate) {
+      return new NextResponse("End date must be after start date", { status: 400 })
+    }
+
     const goal = await db.readingGoal.create({
       data: {
+        userId: session.user.id,
         title,
         description,
-        targetPages,
-        startDate,
-        endDate,
-        userId: session.user.id,
+        targetPages: parsedTargetPages,
+        startDate: parsedStartDate,
+        endDate: parsedEndDate,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        targetPages: true,
+        startDate: true,
+        endDate: true,
+        userId: true,
+        createdAt: true,
+        updatedAt: true,
       },
     })
 
     return NextResponse.json(goal)
   } catch (error) {
     console.error("Error creating goal:", error)
+    if (error instanceof Error && error.message.includes('P2002')) {
+      return new NextResponse("Goal with this title already exists", { status: 400 })
+    }
     return new NextResponse("Internal Error", { status: 500 })
   }
 }
@@ -109,10 +154,16 @@ export async function PUT(request: Request) {
         },
       },
       update: {
-        pagesRead,
+        pagesRead: {
+          increment: pagesRead,
+        },
         mood,
       },
       create: {
+        goalId: id,
+        date: todayDate,
+        pagesRead,
+        mood,
         goalId: id,
         date: todayDate,
         pagesRead,
